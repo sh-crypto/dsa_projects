@@ -6,6 +6,7 @@
 #pragma once
 
 #include "cs225/PNG.h"
+#include "cmath"
 
 /**
 * A subclass of PNG with more member functions for modifying the image.

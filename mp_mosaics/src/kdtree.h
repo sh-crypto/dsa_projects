@@ -91,6 +91,7 @@ class KDTree
      * @param newPoints The vector of points to build your KDTree off of.
      */
     KDTree(const vector<Point<Dim>>& newPoints);
+    
 
 
     /**
@@ -99,6 +100,7 @@ class KDTree
      * @param other The KDTree to copy.
      */
     KDTree(const KDTree<Dim>& other);
+    
 
     /**
      * Assignment operator for KDTree.
@@ -112,6 +114,7 @@ class KDTree
      * Destructor for KDTree.
      */
     ~KDTree();
+    
 
     /**
      * Finds the closest point to the parameter point in the KDTree.
@@ -188,6 +191,11 @@ class KDTree
     /** Internal representation, root and size **/
     KDTreeNode *root;
     size_t size;
+    void destroy_(KDTreeNode* subroot);
+    KDTreeNode* copy_(const KDTree<Dim>* other);
+    KDTreeNode* KDTree_helper(vector<Point<Dim>>& newPoints, int dim);
+    double getRadius(const Point<Dim>& target, const Point<Dim>& currentBest) const;
+    Point<Dim> findNearestNeighborHelper(KDTreeNode* subroot, const Point<Dim>& query, int dim) const;
 
     /** Helper function for grading */
     int getPrintData(KDTreeNode * subroot) const;
@@ -286,6 +294,9 @@ bool smallerDimVal(const Point<Dim>& first, const Point<Dim>& second,
   */
 template <typename RandIter, typename Comparator>
 void select(RandIter begin, RandIter end, RandIter k, Comparator cmp);
+
+template <typename RandIter, typename Comparator>
+int partition(RandIter begin, RandIter end, int piv, Comparator cmp);
 
 
 #include "kdtree.hpp"

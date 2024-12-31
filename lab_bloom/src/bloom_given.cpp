@@ -5,6 +5,7 @@
  */
 
  #include "bloom.h"
+ 
 
 
 std::ostream & operator<<(std::ostream & out, BF const & b){

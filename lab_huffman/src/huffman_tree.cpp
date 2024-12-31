@@ -82,14 +82,54 @@ HuffmanTree::removeSmallest(queue<TreeNode*>& singleQueue,
      * smaller of the two queues heads is the smallest item in either of
      * the queues. Return this item after removing it from its queue.
      */
-    return NULL;
+    if (singleQueue.empty() && mergeQueue.empty()) {
+        return NULL;
+    }
+
+    TreeNode * tmp;
+
+    if (singleQueue.empty()) {
+        tmp = mergeQueue.front();
+        mergeQueue.pop();
+        return tmp;
+    }
+
+    if (mergeQueue.empty()) {
+        tmp = singleQueue.front();
+        singleQueue.pop();
+        return tmp;
+    }
+
+    if (singleQueue.front()->freq.getFrequency() < mergeQueue.front()->freq.getFrequency()) {
+        tmp = singleQueue.front();
+        singleQueue.pop();
+        return tmp;
+    } else {
+        tmp = mergeQueue.front();
+        mergeQueue.pop();
+        return tmp;
+    }
 }
 
 void HuffmanTree::buildTree(const vector<Frequency>& frequencies)
 {
     queue<TreeNode*> singleQueue; // Queue containing the leaf nodes
     queue<TreeNode*> mergeQueue;  // Queue containing the inner nodes
-
+    for(auto it = frequencies.begin(); it != frequencies.end(); it++) {
+        TreeNode* node = new TreeNode(*it);
+        singleQueue.push(node);
+    }
+    while(singleQueue.size() + mergeQueue.size() != 1) {
+        TreeNode * leftNode = removeSmallest(singleQueue, mergeQueue);
+        TreeNode * rightNode = removeSmallest(singleQueue, mergeQueue);
+        TreeNode * newNode = new TreeNode(leftNode->freq.getFrequency() + rightNode->freq.getFrequency());
+        newNode->left = leftNode;
+        newNode->right = rightNode;
+        mergeQueue.push(newNode);
+    }
+    if(singleQueue.empty()) {
+        root_ = mergeQueue.front();
+    }
     /**
      * @todo Your code here!
      *
@@ -132,6 +172,15 @@ void HuffmanTree::decode(stringstream& ss, BinaryFileReader& bfile)
          * character to the stringstream (with operator<<, just like cout)
          * and start traversing from the root node again.
          */
+        if(bfile.getNextBit() == 1) {
+            current = current -> right;
+        } else {
+            current = current -> left;
+        }
+        if(current -> left == NULL && current->right == NULL) {
+            ss<<current->freq.getCharacter();
+            current = root_;
+        }
     }
 }
 
@@ -157,6 +206,17 @@ void HuffmanTree::writeTree(TreeNode* current, BinaryFileWriter& bfile)
      * version: this is fine, as the structure of the tree still reflects
      * what the relative frequencies were.
      */
+    if (current == NULL) {
+        return;
+    }
+    if (current->left == NULL && current->right == NULL) {
+        bfile.writeBit(1);
+        bfile.writeByte(current->freq.getCharacter());
+    } else {
+        bfile.writeBit(0);
+        writeTree(current->left, bfile);
+        writeTree(current->right, bfile);
+    }
 }
 
 HuffmanTree::TreeNode* HuffmanTree::readTree(BinaryFileReader& bfile)
@@ -164,7 +224,7 @@ HuffmanTree::TreeNode* HuffmanTree::readTree(BinaryFileReader& bfile)
     /**
      * @todo Your code here!
      *
-     * This code is reading a HuffanTree in from a file in the format that
+     * This code is reading a HuffmanTree in from a file in the format that
      * we wrote it above. The strategy, then, is as follows:
      *      1. If the file has no more bits, we're done.
      *      2. If we read a 1 bit, we are a leaf node: create a new
@@ -177,7 +237,20 @@ HuffmanTree::TreeNode* HuffmanTree::readTree(BinaryFileReader& bfile)
      *      4. Your function should return the TreeNode it creates, or NULL
      *         if it did not create one.
      */
-
+    if(bfile.hasBits() == false) {
+        return NULL;
+    }
+    while(bfile.hasBits()) {
+        if(bfile.getNextBit() == 1) {
+            TreeNode * node = new TreeNode(Frequency(bfile.getNextByte(), 0));
+            return node;
+        } else {
+            TreeNode * node = new TreeNode(0);
+            node -> left = readTree(bfile);
+            node -> right = readTree(bfile);
+            return node;
+        }
+    }
     return NULL;
 }
 

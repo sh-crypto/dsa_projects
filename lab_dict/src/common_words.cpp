@@ -26,7 +26,7 @@ string remove_punct(const string& str)
 {
     string ret;
     std::remove_copy_if(str.begin(), str.end(), std::back_inserter(ret),
-                        [](int c) {return std::ispunct(c);});
+                        std::ptr_fun<int, int>(&std::ispunct));
     return ret;
 }
 
@@ -47,13 +47,26 @@ void CommonWords::init_file_word_maps(const vector<string>& filenames)
         // get the corresponding vector of words that represents the current
         // file
         vector<string> words = file_to_vector(filenames[i]);
+        map<string, unsigned int> count;
         /* Your code goes here! */
+        for (string word: words) {
+          map<string, unsigned int>::iterator lookup = count.find(word);
+          if (lookup != count.end()) lookup->second++;
+          else count[word] = 1;
+        }
+        file_word_maps[i] = count;
     }
 }
 
 void CommonWords::init_common()
 {
     /* Your code goes here! */
+    //std::map<std::string, unsigned int> common;
+    for (map<string, unsigned int> m : file_word_maps) {
+        for (std::pair<string, unsigned int> key_val : m) {
+          common[key_val.first] ++;
+        }
+    }
 }
 
 /**
@@ -65,6 +78,20 @@ vector<string> CommonWords::get_common_words(unsigned int n) const
 {
     vector<string> out;
     /* Your code goes here! */
+    size_t size = file_word_maps.size();
+
+    for (std::pair<string, unsigned int> key_val : common) {
+      if (key_val.second == size) {
+        string word = key_val.first;
+        bool qualify = true;
+        size_t i = 0;
+        while (i < size && qualify) {
+          if (file_word_maps[i].at(word) < n) qualify = false;
+          i++;
+        }
+        if (qualify) out.push_back(word);
+      }
+    }
     return out;
 }
 

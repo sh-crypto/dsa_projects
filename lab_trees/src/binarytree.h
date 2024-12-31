@@ -170,6 +170,10 @@ class BinaryTree
          */
         void printLeftToRight(const Node* subRoot) const;
 
+        void mirror(Node* subRoot) const;
+
+        bool isOrderedRecursiveHelper(Node* node, T min, T max) const;
+
 
 
 

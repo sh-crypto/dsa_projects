@@ -29,11 +29,19 @@ namespace QuackFun {
 template <typename T>
 T sum(stack<T>& s)
 {
-
+    if(s.empty()) {
+        return T();
+    } else {
+        T topel = s.top();
+        s.pop();
+        T ans = topel + sum(s);
+        s.push(topel);
+        return ans;
+    }
     // Your code here
-    return T(); // stub return value (0 for primitive types). Change this!
-                // Note: T() is the default value for objects, and 0 for
-                // primitive types
+    // stub return value (0 for primitive types). Change this!
+    // Note: T() is the default value for objects, and 0 for
+    // primitive types
 }
 
 /**
@@ -55,10 +63,31 @@ T sum(stack<T>& s)
  */
 bool isBalanced(queue<char> input)
 {
+    stack<char> s;
+    while (!input.empty()) {
+        char c = input.front();
+        input.pop();
+
+        if (c == '(' || c == '[' || c == '{') {
+            s.push(c);
+        } else if (c == ')' || c == ']' || c == '}') {
+            if (s.empty()) return false;
+
+            char top = s.top();
+            if ((c == ')' && top == '(') ||
+                (c == ']' && top == '[') ||
+                (c == '}' && top == '{')) {
+                s.pop(); 
+            } else {
+                return false; 
+            }
+        }
+    }
+    return s.empty(); 
+}
+
 
     // @TODO: Make less optimistic
-    return true;
-}
 
 /**
  * Reverses even sized blocks of items in the queue. Blocks start at size
@@ -79,8 +108,43 @@ template <typename T>
 void scramble(queue<T>& q)
 {
     stack<T> s;
-    // optional: queue<T> q2;
+    int rev_size = 1;
+    int sum =0;
+    int que_size = q.size();
+    bool reverse = false;
+    bool is_scrambled = false;
 
-    // Your code here
+    while(!is_scrambled)
+    {
+	if (sum + rev_size > que_size)
+	    rev_size = que_size-sum;
+	if (reverse)
+    {
+        for (int i=1; i<=rev_size; i++)
+        {
+            s.push(q.front());
+            q.pop();
+        }
+        for (int i=1; i<=rev_size; i++)
+        {
+            q.push(s.top());
+            s.pop();
+        }
+    }   
+	else
+	  {
+	    for (int i=1; i<=rev_size; i++)
+	    {
+		    q.push(q.front());
+		    q.pop();
+	    }
+	  }
+    reverse = !reverse;
+    sum += rev_size;
+    rev_size++;
+
+    if (sum == que_size)
+    is_scrambled = true;
+    }
 }
 }

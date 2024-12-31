@@ -213,3 +213,4 @@ TEST_CASE("Complicated manhattanDistance tests", "[weight=2][part=1]")
                           4, 3, 2, 1});
     REQUIRE(puzzle.manhattanDistance(solvedPuzzle) == 58);
 }
+

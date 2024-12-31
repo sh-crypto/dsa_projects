@@ -21,7 +21,23 @@ MosaicCanvas* mapTiles(SourceImage const& theSource,
     /**
      * @todo Implement this function!
      */
-
-    return NULL;
+    MosaicCanvas* canvas = new MosaicCanvas(theSource.getRows(), theSource.getColumns());
+    std::vector<Point<3>> avg;
+    for(unsigned int i = 0; i < theTiles.size(); ++i) {
+        avg.push_back(convertToXYZ(theTiles[i].getAverageColor()));
+    }
+    KDTree<3> tree(avg);
+    for(auto row = 0; row < theSource.getRows(); row++) {
+        for(auto col = 0; col < theSource.getColumns(); col++) {
+            Point <3> r = convertToXYZ(theSource.getRegionColor(row, col));
+            Point <3> color = tree.findNearestNeighbor(r);
+            auto iterate = std::find(avg.begin(), avg.end(), color);
+            if(iterate != avg.end()) {
+                TileImage* ct = &theTiles[(iterate - avg.begin())];
+                canvas->setTile(row, col, ct);
+            }
+        }
+    }
+    return canvas;
 }
 

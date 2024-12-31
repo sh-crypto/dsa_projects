@@ -30,6 +30,12 @@ void AVLTree<K, V>::rotateLeft(Node*& t)
 {
     functionCalls.push_back("rotateLeft"); // Stores the rotation name (don't remove this)
     // your code here
+    Node* r1 = t->right;
+    t->right = r1->left;
+    r1->left = t;
+    t->height = std::max(heightOrNeg1(t->left),heightOrNeg1(t->right))+1;
+    t = r1;
+    t->height = std::max(heightOrNeg1(t->left),heightOrNeg1(t->right))+1;
 }
 
 template <class K, class V>
@@ -46,6 +52,12 @@ void AVLTree<K, V>::rotateRight(Node*& t)
 {
     functionCalls.push_back("rotateRight"); // Stores the rotation name (don't remove this)
     // your code here
+    Node* l1 = t->left;
+    t->left = l1->right;
+    l1->right = t;
+    t->height = std::max(heightOrNeg1(t->left),heightOrNeg1(t->right))+1;
+    t = l1;
+    t->height = std::max(heightOrNeg1(t->left),heightOrNeg1(t->right))+1;
 }
 
 template <class K, class V>
@@ -53,12 +65,34 @@ void AVLTree<K, V>::rotateRightLeft(Node*& t)
 {
     functionCalls.push_back("rotateRightLeft"); // Stores the rotation name (don't remove this)
     // your code here
+    rotateRight(t->right);
+    rotateLeft(t);
 }
 
 template <class K, class V>
 void AVLTree<K, V>::rebalance(Node*& subtree)
 {
     // your code here
+    int bal = heightOrNeg1(subtree->left) - heightOrNeg1(subtree->right);
+
+    if (bal == 2) {
+      int leftBal = heightOrNeg1(subtree->left->left) - heightOrNeg1(subtree->left->right);
+      if (leftBal == 1) {
+        rotateRight(subtree);
+      } else {
+        rotateLeftRight(subtree);
+      }
+    }
+
+    if (bal == -2) {
+      int rightBal = heightOrNeg1(subtree->right->left) - heightOrNeg1(subtree->right->right);
+      if (rightBal == -1) {
+        rotateLeft(subtree);
+      } else {
+        rotateRightLeft(subtree);
+      }
+    }
+    subtree->height = 1 + std::max(heightOrNeg1(subtree->left),heightOrNeg1(subtree->right));;
 }
 
 template <class K, class V>
@@ -71,6 +105,13 @@ template <class K, class V>
 void AVLTree<K, V>::insert(Node*& subtree, const K& key, const V& value)
 {
     // your code here
+    if (!subtree) subtree = new Node(key, value);
+
+    else if (key < subtree->key) insert(subtree->left, key, value);
+
+    else if (key > subtree->key) insert(subtree->right, key, value);
+
+    rebalance(subtree);
 }
 
 template <class K, class V>
@@ -87,19 +128,33 @@ void AVLTree<K, V>::remove(Node*& subtree, const K& key)
 
     if (key < subtree->key) {
         // your code here
+        remove(subtree->left, key);
     } else if (key > subtree->key) {
         // your code here
+        remove(subtree->right, key);
     } else {
         if (subtree->left == NULL && subtree->right == NULL) {
             /* no-child remove */
             // your code here
+            delete subtree;
+            subtree = NULL;
         } else if (subtree->left != NULL && subtree->right != NULL) {
             /* two-child remove */
             // your code here
+            Node* iop = subtree->left;
+            while (iop->right) iop = iop->right;
+            swap(subtree, iop);
+            remove(subtree->left, key);
         } else {
             /* one-child remove */
             // your code here
+            Node* left = subtree->left;
+            Node* right = subtree->right;
+            delete subtree;
+            if (left) subtree = left;
+            else subtree = right;
         }
         // your code here
     }
+    if (subtree) rebalance(subtree);
 }

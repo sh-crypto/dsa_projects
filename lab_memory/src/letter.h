@@ -1,3 +1,4 @@
+
 /**
  * @file letter.h
  * Declaration of the Letter class.

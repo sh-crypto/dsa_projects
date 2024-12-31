@@ -36,6 +36,7 @@ namespace Traversals {
   */
   void bfs_add(std::deque<Point> & work_list, const Point & point) {
     /** @todo [Part 1] */
+    work_list.push_back(point);
   }
 
   /**
@@ -45,6 +46,7 @@ namespace Traversals {
   */
   void dfs_add(std::deque<Point> & work_list, const Point & point) {
     /** @todo [Part 1] */
+    work_list.push_front(point);
   }
 
   /**
@@ -53,6 +55,9 @@ namespace Traversals {
   */
   void bfs_pop(std::deque<Point> & work_list) {
     /** @todo [Part 1] */
+    if(!(work_list.empty())) {
+      work_list.pop_front();
+    }
   }
 
   /**
@@ -61,6 +66,9 @@ namespace Traversals {
   */
   void dfs_pop(std::deque<Point> & work_list) {
     /** @todo [Part 1] */
+    if(!(work_list.empty())) {
+      work_list.pop_front();
+    }
   }
 
   /**
@@ -70,7 +78,10 @@ namespace Traversals {
    */
   Point bfs_peek(std::deque<Point> & work_list) {
     /** @todo [Part 1] */
-    return Point(0, 0);
+    if(work_list.empty()) {
+      return Point();
+    }
+    return work_list.front();
   }
 
   /**
@@ -80,7 +91,10 @@ namespace Traversals {
    */
   Point dfs_peek(std::deque<Point> & work_list) {
     /** @todo [Part 1] */
-    return Point(0, 0);
+    if(work_list.empty()) {
+      return Point();
+    }
+    return work_list.front();
   }
 
   /**
@@ -94,6 +108,22 @@ namespace Traversals {
   */
   ImageTraversal::ImageTraversal(const PNG & png, const Point & start, double tolerance, TraversalFunctions fns) {  
     /** @todo [Part 1] */
+    root_ = start;
+    png_ = png;
+    tolerance_ = tolerance;
+    fns_ = fns;
+  }
+
+  ImageTraversal::Iterator::Iterator(const PNG & png, const Point & start, double tolerance, TraversalFunctions fns) {
+    root_ = start;
+    tolerance_ = tolerance;
+    png_ = png;
+    fns_ = fns;
+    fns_.add(work_list_, start);
+    vp.resize(png_.height());
+    for (auto &row : vp) {
+        row.resize(png_.width(), false);
+    }
   }
 
   /**
@@ -101,7 +131,7 @@ namespace Traversals {
   */
   ImageTraversal::Iterator ImageTraversal::begin() {
     /** @todo [Part 1] */
-    return ImageTraversal::Iterator();
+    return ImageTraversal::Iterator(png_, root_, tolerance_, fns_);
   }
 
   /**
@@ -126,9 +156,44 @@ namespace Traversals {
   * Advances the traversal of the image.
   */
   ImageTraversal::Iterator & ImageTraversal::Iterator::operator++() {
-    /** @todo [Part 1] */
+    if (work_list_.empty()) {
+        //std::cout << "Work list is empty, ending traversal" << std::endl;
+        return *this;
+    }
+
+    Point curr = fns_.peek(work_list_);
+    //std::cout << "Current point: " << curr << std::endl;
+    fns_.pop(work_list_);
+
+    vp[curr.y][curr.x] = true;
+
+    std::vector<Point> nearby = {};
+    if (curr.x + 1 < png_.width() && !vp[curr.y][curr.x + 1]) nearby.emplace_back(curr.x + 1, curr.y);
+    if (curr.y + 1 < png_.height() && !vp[curr.y + 1][curr.x]) nearby.emplace_back(curr.x, curr.y + 1);
+    if (curr.x > 0 && !vp[curr.y][curr.x - 1]) nearby.emplace_back(curr.x - 1, curr.y);
+    if (curr.y > 0 && !vp[curr.y - 1][curr.x]) nearby.emplace_back(curr.x, curr.y - 1);
+
+    for (const Point& to_check : nearby) {
+        double delta = calculateDelta(png_.getPixel(to_check.x, to_check.y), png_.getPixel(root_.x, root_.y));
+        //std::cout << "Checking point: " << to_check << " with delta: " << delta << std::endl;
+
+        if (delta <= tolerance_ && !vp[to_check.y][to_check.x]) {
+            fns_.add(work_list_, to_check);
+            //std::cout << "Adding point: " << to_check << " to work list with delta: " << delta << std::endl;
+        } /*else {
+            //std::cout << "Skipping point: " << to_check << " with delta: " << delta << std::endl;
+        }*/
+    }
+
+    while (!work_list_.empty() && vp[fns_.peek(work_list_).y][fns_.peek(work_list_).x]) fns_.pop(work_list_);
+
+    ////std::cout << "Work list size: " << work_list_.size() << std::endl;
+
+
     return *this;
+
   }
+
 
   /**
   * Iterator accessor operator.
@@ -137,7 +202,7 @@ namespace Traversals {
   */
   Point ImageTraversal::Iterator::operator*() {
     /** @todo [Part 1] */
-    return Point(0, 0);
+    return fns_.peek(work_list_);
   }
 
   /**
@@ -147,7 +212,10 @@ namespace Traversals {
   */
   bool ImageTraversal::Iterator::operator!=(const ImageTraversal::Iterator &other) {
     /** @todo [Part 1] */
-    return false;
+    if(empty() && other.empty()) return false;
+    if(empty() != other.empty()) return true;
+    std::deque<Point> work_list = other.work_list_;
+    return !(fns_.peek(work_list_) == fns_.peek(work_list));
   }
 
   /**

@@ -11,6 +11,7 @@
 #include <string>
 #include <functional> //Needed for std::hash<>
 // #include <bitset> //Needed for bitset<> (but bitset no longer used)
+#include <unordered_set>
 
 typedef int (*hashFunction)(int); 
 //using hashFunction = int(*)(int); // Equivalent definition to typdef

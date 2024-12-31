@@ -4,6 +4,10 @@
  */
 #pragma once
 #include <vector>
+#include <queue>
+#include <map>
+#include <set>
+#include <functional>
 #include <array>
 #include <iostream>
 
@@ -89,7 +93,10 @@ public:
 
 
 private:
+    std::array<uint8_t, 16> board;
+    int empty_pos;
 };
+
 
 /**
 * Solves the puzzle using A* with manhattan distance as a heuristic.
@@ -104,7 +111,14 @@ private:
 * state, and the last element is the desired state. Empty if no solution exists.
 */
 std::vector<PuzzleState> solveAstar(const PuzzleState& startState, const PuzzleState &desiredState, size_t *iterations = NULL);
+struct StateWithPriority {
+    PuzzleState state;
+    int priority;
 
+    bool operator<(const StateWithPriority& other) const {
+        return priority > other.priority; 
+    }
+};
 /**
 * Solves the puzzle using BFS.
 * @param startState The starting state of the puzzle
@@ -118,4 +132,5 @@ std::vector<PuzzleState> solveAstar(const PuzzleState& startState, const PuzzleS
 * state, and the last element is the desired state. Empty if no solution exists.
 */
 std::vector<PuzzleState> solveBFS(const PuzzleState &startState, const PuzzleState &desiredState, size_t *iterations = NULL);
+std::vector<PuzzleState> tracePath(const std::map<PuzzleState, PuzzleState>& cameFrom, const PuzzleState& start, const PuzzleState& goal);
 

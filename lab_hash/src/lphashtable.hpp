@@ -1,8 +1,7 @@
-/**
- * @file lphashtable.cpp
- * Implementation of the LPHashTable class.
- */
 #include "lphashtable.h"
+
+using hashes::hash;
+using std::pair;
 
 template <class K, class V>
 LPHashTable<K, V>::LPHashTable(size_t tsize)
@@ -10,7 +9,7 @@ LPHashTable<K, V>::LPHashTable(size_t tsize)
     if (tsize <= 0)
         tsize = 17;
     size = findPrime(tsize);
-    table = new std::pair<K, V>*[size];
+    table = new pair<K, V>*[size];
     should_probe = new bool[size];
     for (size_t i = 0; i < size; i++) {
         table[i] = NULL;
@@ -37,14 +36,14 @@ LPHashTable<K, V> const& LPHashTable<K, V>::operator=(LPHashTable const& rhs)
         delete[] table;
         delete[] should_probe;
 
-        table = new std::pair<K, V>*[rhs.size];
+        table = new pair<K, V>*[rhs.size];
         should_probe = new bool[rhs.size];
         for (size_t i = 0; i < rhs.size; i++) {
             should_probe[i] = rhs.should_probe[i];
             if (rhs.table[i] == NULL)
                 table[i] = NULL;
             else
-                table[i] = new std::pair<K, V>(*(rhs.table[i]));
+                table[i] = new pair<K, V>(*(rhs.table[i]));
         }
         size = rhs.size;
         elems = rhs.elems;
@@ -55,14 +54,14 @@ LPHashTable<K, V> const& LPHashTable<K, V>::operator=(LPHashTable const& rhs)
 template <class K, class V>
 LPHashTable<K, V>::LPHashTable(LPHashTable<K, V> const& other)
 {
-    table = new std::pair<K, V>*[other.size];
+    table = new pair<K, V>*[other.size];
     should_probe = new bool[other.size];
     for (size_t i = 0; i < other.size; i++) {
         should_probe[i] = other.should_probe[i];
         if (other.table[i] == NULL)
             table[i] = NULL;
         else
-            table[i] = new std::pair<K, V>(*(other.table[i]));
+            table[i] = new pair<K, V>(*(other.table[i]));
     }
     size = other.size;
     elems = other.elems;
@@ -79,9 +78,14 @@ void LPHashTable<K, V>::insert(K const& key, V const& value)
      * **Do this check *after* increasing elems (but before inserting)!!**
      * Also, don't forget to mark the cell for probing with should_probe!
      */
-
-    (void) key;   // prevent warnings... When you implement this function, remove this line.
-    (void) value; // prevent warnings... When you implement this function, remove this line.
+     elems++;
+     if ((1.0 * elems) / size >= 0.7) resizeTable();
+     size_t idx = hash(key, size);
+     while (should_probe[idx]) {
+       idx = (idx + 1) % size;
+     }
+     table[idx] = new pair<K, V>(key, value);
+     should_probe[idx] = true;
 }
 
 template <class K, class V>
@@ -90,19 +94,28 @@ void LPHashTable<K, V>::remove(K const& key)
     /**
      * @todo: implement this function
      */
+     int idx = findIndex(key);
+     if (idx >= 0) {
+       delete table[idx];
+       table[idx] = nullptr;
+       should_probe[idx] = false;
+       elems--;
+     }
 }
 
 template <class K, class V>
 int LPHashTable<K, V>::findIndex(const K& key) const
 {
-    
+
     /**
      * @todo Implement this function
      *
      * Be careful in determining when the key is not in the table!
      */
-
-    return -1;
+     for (size_t i = 0; i < size; i++) {
+       if (table[i] && table[i]->first == key) return i;
+     }
+     return -1;
 }
 
 template <class K, class V>
@@ -140,7 +153,7 @@ void LPHashTable<K, V>::clear()
         delete table[i];
     delete[] table;
     delete[] should_probe;
-    table = new std::pair<K, V>*[17];
+    table = new pair<K, V>*[17];
     should_probe = new bool[17];
     for (size_t i = 0; i < 17; i++)
         should_probe[i] = false;
@@ -159,4 +172,25 @@ void LPHashTable<K, V>::resizeTable()
      *
      * @hint Use findPrime()!
      */
+     pair<K, V> **newTable = new pair<K, V>*[findPrime(size * 2)];
+     bool *new_should_probe = new bool[findPrime(size * 2)];
+     for (size_t i = 0; i < findPrime(size * 2); i++) {
+         newTable[i] = nullptr;
+         new_should_probe[i] = false;
+     }
+     for (size_t i = 0; i < size; i++) {
+       if (table[i]) {
+         size_t idx = hash(table[i]->first, findPrime(size * 2));
+         while (newTable[idx] != NULL) {
+           idx = (idx + 1) % size;
+         }
+         newTable[idx] = table[i];
+         new_should_probe[idx] = true;
+       }
+     }
+     delete[] table;
+     table = newTable;
+     delete[] should_probe;
+     should_probe = new_should_probe;
+     size = findPrime(size * 2);
 }

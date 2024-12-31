@@ -30,6 +30,8 @@ public:
 private:
 	/** @todo [Part 2] */
 	/** add private members here*/
-
+  PNG png_;
+  std::vector<Traversals::ImageTraversal*> traverse_;
+  std::vector<ColorPicker*> color_;
 
 };

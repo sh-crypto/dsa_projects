@@ -24,6 +24,9 @@
  */
 class DisjointSets
 {
+  private:
+    std::vector <int> set_;
+
   public:
     /**
      * Creates n unconnected root nodes at the end of the vector.

@@ -5,6 +5,7 @@
  */
 #include "InorderTraversal.h"
 #include <iostream>
+#include <climits>
 
 /**
  * @return The height of the binary tree. Recall that the height of a binary
@@ -75,10 +76,25 @@ void BinaryTree<T>::printLeftToRight(const Node* subRoot) const
  * Flips the tree over a vertical axis, modifying the tree itself
  *  (not creating a flipped copy).
  */
-    template <typename T>
+template <typename T>
 void BinaryTree<T>::mirror()
 {
     //your code here
+    return mirror(root);
+}
+
+template <typename T>
+void BinaryTree<T>::mirror(Node* subRoot) const
+{
+  if (subRoot == NULL) {
+    return;
+  }
+  mirror(subRoot->left);
+  mirror(subRoot->right);
+
+  Node* tmp = subRoot->left;
+  subRoot->left = subRoot->right;
+  subRoot->right = tmp;
 }
 
 
@@ -91,8 +107,22 @@ void BinaryTree<T>::mirror()
 template <typename T>
 bool BinaryTree<T>::isOrderedIterative() const
 {
-    // your code here
-    return false;
+    bool isordered = true;
+    if (!root) {
+        return isordered;
+    }
+    InorderTraversal<T> traversal(root);
+    int prev_val = (*traversal.begin())->elem;
+    for (TreeTraversal<int>::Iterator it = traversal.begin(); it != traversal.end(); ++it) {
+        if (prev_val < (*it)->elem) {
+            prev_val = (*it)->elem;
+            isordered = true;
+        } else if (prev_val > (*it)->elem) {
+            isordered = false;
+            break;
+        }
+    }
+    return isordered;
 }
 
 /**
@@ -105,6 +135,17 @@ template <typename T>
 bool BinaryTree<T>::isOrderedRecursive() const
 {
     // your code here
-    return false;
+    return isOrderedRecursiveHelper(root, INT_MIN, INT_MAX);
 }
 
+template <typename T>
+bool BinaryTree<T>::isOrderedRecursiveHelper(Node* node, T min, T max) const
+{
+  if (node == NULL) {
+    return true;
+  } else if(node->elem < min || node->elem > max){
+    return false;
+  } else {
+      return isOrderedRecursiveHelper(node->left, min, node->elem) && isOrderedRecursiveHelper(node->right, node->elem, max);
+  }
+}

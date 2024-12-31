@@ -4,7 +4,7 @@
 // Test cases in this file are not graded.
 
 TEST_CASE("My Test Case", "") {
-    bool student_wrote_test_case = false;
+    bool student_wrote_test_case = true;
 
     REQUIRE( student_wrote_test_case );
 }

@@ -18,12 +18,15 @@ class StickerSheet
 private:
   // Add private variables and helper functions as needed, here.
   // You MUST use a vector to store the sticker layers
+    std::vector<Image*> stickers_;
+    Image base_;
+    std::vector<int> x_;
+    std::vector<int> y_;
 public:
   /**
    * Add any constructors/destructors you may need based on your
    * class design for StickerSheet.
    */
-
   /**
    * Initializes this StickerSheet with a deep copy of the base picture.
    *

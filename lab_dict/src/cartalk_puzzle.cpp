@@ -7,7 +7,7 @@
  */
 
 #include <fstream>
-#include <iterator>
+#include <iostream>
 
 #include "cartalk_puzzle.h"
 
@@ -22,10 +22,26 @@ using namespace std;
  * @param word_list_fname The filename of the word list to be used.
  */
 vector<std::tuple<std::string, std::string, std::string>> cartalk_puzzle(PronounceDict d,
-                                                                         const string &word_list_fname)
+                                    const string& word_list_fname)
 {
     vector<std::tuple<std::string, std::string, std::string>> ret;
 
     /* Your code goes here! */
+    ifstream wordsFile(word_list_fname);
+    string word;
+    if (wordsFile.is_open()) {
+      /* Reads a line from `wordsFile` into `word` until the file ends. */
+      while (getline(wordsFile, word)) {
+// cout<<word<<endl;
+        if (word.size() < 3) continue;
+        string word1 = word.substr(1);
+        string word2 = word[0] + word.substr(2);
+// cout<<word1<<" "<<word2<<endl;
+        if (d.homophones(word, word1) && d.homophones(word, word2)) {
+cout<<word<<endl;
+          ret.push_back(tuple<string,string,string>(word, word1,word2));
+        }
+      }
+    }
     return ret;
 }

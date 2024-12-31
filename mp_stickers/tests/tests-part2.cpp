@@ -30,7 +30,7 @@ TEST_CASE("A basic StickerSheet works", "[weight=5][part=2][valgrind][timeout=30
 
   Image expected;
   expected.readFromFile("../data/expected.png");
-
+  sheet.render().writeToFile("myImage.png");
   REQUIRE( sheet.render() == expected );
 }
 
